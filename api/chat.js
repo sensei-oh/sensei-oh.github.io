@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "https://YOURUSERNAME.github.io");
+  res.setHeader("Access-Control-Allow-Origin", "https://sensei-oh.github.io");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "content-type");
   if (req.method === "OPTIONS") return res.status(204).end();
