@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GreenConnect</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#f3f7f1;--surface:#fff;--ink:#14221a;--muted:#5a6b60;--leaf:#2a7a4b;--leaf-d:#1d5a37;--sun:#f0b429;--line:#d5e0d3;--chip:#e3eee1;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a13;--surface:#17251c;--ink:#e8f1ea;--muted:#9bb0a1;--leaf:#5cc489;--leaf-d:#8fe0b2;--sun:#f0b429;--line:#294133;--chip:#1f3327;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1a13;--surface:#17251c;--ink:#e8f1ea;--muted:#9bb0a1;--leaf:#5cc489;--leaf-d:#8fe0b2;--sun:#f0b429;--line:#294133;--chip:#1f3327;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "DM Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:600;line-height:1.15;margin:0}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 110px}
+header h1{font-size:2rem}header p{color:var(--muted);margin:.4rem 0 0}
+nav{display:flex;gap:6px;margin:20px 0 14px;border-bottom:1px solid var(--line)}
+nav button{flex:1;background:none;border:0;border-bottom:3px solid transparent;padding:10px 4px;font:inherit;font-weight:500;color:var(--muted);cursor:pointer}
+nav button[aria-selected="true"]{color:var(--leaf);border-color:var(--leaf)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.chip{border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:99px;padding:6px 14px;font:inherit;font-size:.9rem;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--leaf);color:#fff;border-color:var(--leaf)}
+.loc{margin-left:auto;background:none;border:1px dashed var(--leaf);color:var(--leaf)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.card h3{font-size:1.2rem}.meta{color:var(--muted);font-size:.9rem;margin:.3rem 0}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:8px}
+.tag{font-size:.8rem;background:var(--chip);border-radius:6px;padding:2px 8px}
+.btn{background:var(--leaf);color:#fff;border:0;border-radius:8px;padding:9px 16px;font:inherit;font-weight:700;cursor:pointer}
+.btn.alt{background:none;color:var(--leaf);border:1px solid var(--leaf)}
+.score{display:flex;gap:12px;margin-bottom:14px}
+.score div{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px}
+.score b{font:600 1.8rem Fraunces,Georgia,serif;display:block}
+.empty{color:var(--muted);text-align:center;padding:30px 10px}
+.note{font-size:.85rem;color:var(--muted)}
+#fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--sun);color:#14221a;border:0;border-radius:99px;padding:12px 18px;font:inherit;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.25);cursor:pointer}
+#chat{position:fixed;right:12px;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:420px;margin-left:auto;height:min(70vh,520px);background:var(--surface);border:1px solid var(--line);border-radius:12px;display:none;flex-direction:column;box-shadow:0 6px 24px rgba(0,0,0,.3)}
+#chat.open{display:flex}
+#chat header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+#chat header b{font-family:Fraunces,Georgia,serif}
+#msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.m{max-width:86%;padding:8px 12px;border-radius:12px;white-space:pre-wrap;font-size:.95rem}
+.m.u{align-self:flex-end;background:var(--leaf);color:#fff}.m.b{align-self:flex-start;background:var(--chip)}
+#chat form{display:flex;gap:6px;padding:10px;border-top:1px solid var(--line)}
+#chat input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:9px 10px;font:inherit}
+.x{background:none;border:0;font-size:1.3rem;color:var(--muted);cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>GreenConnect</h1><p>Find a cleanup, recycling drive or plantation near you, join it, and keep a record of what you’ve done.</p></header>
+<nav role="tablist">
+<button role="tab" data-t="events" aria-selected="true">Events</button>
+<button role="tab" data-t="mine" aria-selected="false">My participation</button>
+<button role="tab" data-t="tips" aria-selected="false">Tips</button>
+</nav>
+<main id="view"></main>
+<p class="note">Sample events for a college demo. Replace them with real ones in the EVENTS list.</p>
+</div>
+<button id="fab">Ask EcoBot</button>
+<section id="chat" aria-label="EcoBot chat">
+<header><b>EcoBot</b><button class="x" id="close" aria-label="Close chat">×</button></header>
+<div id="msgs"></div>
+<form id="cf"><input id="ci" placeholder="Ask about events or eco tips" autocomplete="off"><button class="btn">Send</button></form>
+</section>
+<script>
+const day=86400000, now=Date.now();
+const EVENTS=[
+{id:1,title:"Beach cleanliness drive",cat:"Cleanliness",place:"Bhayandar Creek Shore",lat:19.31,lon:72.85,d:3,desc:"Gloves and bags provided. Two hours of cleanup followed by waste segregation."},
+{id:2,title:"Plant 100 saplings",cat:"Plantation",place:"Mira Road Hillside",lat:19.28,lon:72.88,d:6,desc:"Native saplings, digging tools and water provided. Wear shoes you can get muddy."},
+{id:3,title:"E-waste and plastic collection",cat:"Recycling",place:"Shree L. R. Tiwari College campus",lat:19.285,lon:72.868,d:9,desc:"Bring old chargers, batteries and clean plastic. Items go to an authorised recycler."},
+{id:4,title:"Lake-side cleanup",cat:"Cleanliness",place:"Local lake garden",lat:19.3,lon:72.86,d:12,desc:"Remove litter around the walking path. Refreshments for all volunteers."},
+{id:5,title:"Compost workshop",cat:"Recycling",place:"Community hall, Bhayandar East",lat:19.302,lon:72.855,d:15,desc:"Learn to turn kitchen waste into compost at home."},
+{id:6,title:"Tree care day",cat:"Plantation",place:"Station Road avenue",lat:19.29,lon:72.87,d:18,desc:"Water, mulch and protect young trees along the road."}
+].map(e=>({...e,when:new Date(now+e.d*day)}));
+const TIPS=["Carry a cloth bag. One bag used for years replaces hundreds of plastic ones.","Segregate waste into wet and dry at home. Recyclers can only use clean, dry material.","Switch off lights and fans when you leave a room.","Water saplings in the evening so less water evaporates.","Take an old charger or battery to an e-waste drive instead of throwing it away.","Refill a bottle instead of buying a new one."];
+let tab="events",cat="All",pos=null,reg={};
+try{reg=JSON.parse(localStorage.getItem("gc-reg")||"{}")}catch(e){}
+const save=()=>{try{localStorage.setItem("gc-reg",JSON.stringify(reg))}catch(e){}};
+const $=s=>document.querySelector(s),fmt=d=>d.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function km(a,b,c,d){const r=Math.PI/180,x=(c-a)*r,y=(d-b)*r,h=Math.sin(x/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(y/2)**2;return 12742*Math.asin(Math.sqrt(h))}
+function card(e,mine){
+const dist=pos?` · ${km(pos.lat,pos.lon,e.lat,e.lon).toFixed(1)} km away`:"";
+const r=reg[e.id];
+let btn;
+if(!r)btn=`<button class="btn" data-reg="${e.id}">Register</button>`;
+else if(mine)btn=r.att?`<span class="tag">Attended</span>`:`<button class="btn" data-att="${e.id}">Mark attended</button> <button class="btn alt" data-reg="${e.id}">Cancel</button>`;
+else btn=`<button class="btn alt" data-reg="${e.id}">Registered, tap to cancel</button>`;
+return `<article class="card"><span class="tag">${e.cat}</span><h3>${esc(e.title)}</h3><p class="meta">${fmt(e.when)} · ${esc(e.place)}${dist}</p><p>${esc(e.desc)}</p><div class="row">${btn}</div></article>`}
+function render(){
+document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===tab));
+let h="";
+if(tab==="events"){
+let list=EVENTS.filter(e=>cat==="All"||e.cat===cat);
+if(pos)list=[...list].sort((a,b)=>km(pos.lat,pos.lon,a.lat,a.lon)-km(pos.lat,pos.lon,b.lat,b.lon));
+h=`<div class="bar">${["All","Cleanliness","Recycling","Plantation"].map(c=>`<button class="chip" aria-pressed="${c===cat}" data-cat="${c}">${c}</button>`).join("")}<button class="chip loc" id="loc">${pos?"Sorted by distance":"Show nearest first"}</button></div>`+(list.map(e=>card(e,false)).join("")||`<p class="empty">No events in this category yet.</p>`)}
+else if(tab==="mine"){
+const mine=EVENTS.filter(e=>reg[e.id]),att=mine.filter(e=>reg[e.id].att).length;
+h=`<div class="score"><div><b>${mine.length}</b>Registered</div><div><b>${att}</b>Attended</div></div>`+(mine.map(e=>card(e,true)).join("")||`<p class="empty">You haven’t registered for anything yet. Open Events and pick one.</p>`)}
+else h=TIPS.map(t=>`<article class="card"><p style="margin:0">${esc(t)}</p></article>`).join("");
+$("#view").innerHTML=h}
+document.addEventListener("click",ev=>{
+const t=ev.target.closest("[data-t],[data-cat],[data-reg],[data-att],#loc");if(!t)return;
+if(t.dataset.t)tab=t.dataset.t;
+else if(t.dataset.cat)cat=t.dataset.cat;
+else if(t.dataset.reg){const id=t.dataset.reg;if(reg[id])delete reg[id];else reg[id]={att:false};save()}
+else if(t.dataset.att){reg[t.dataset.att].att=true;save()}
+else if(t.id==="loc"){if(!navigator.geolocation){alert("Location isn’t available in this browser.");return}
+navigator.geolocation.getCurrentPosition(p=>{pos={lat:p.coords.latitude,lon:p.coords.longitude};render()},()=>alert("Location permission was denied. Events stay in date order."));return}
+render()});
+render();
+/* EcoBot */
+const msgs=$("#msgs"),hist=[];let sample=null;
+function add(c,t){const d=document.createElement("div");d.className="m "+c;d.textContent=t;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d}
+const SYS=()=>"You are EcoBot, the assistant inside GreenConnect, a platform that helps people find and join local environmental activities. Be friendly and brief (under 90 words). Answer using these events when asked about them, and never invent events:\n"+EVENTS.map(e=>`- ${e.title} (${e.cat}) on ${fmt(e.when)} at ${e.place}: ${e.desc}`).join("\n")+"\nFor eco tips, give practical everyday advice. If asked how to register, say to open the Events tab and tap Register. Politely decline unrelated topics.";
+$("#fab").onclick=async()=>{$("#chat").classList.add("open");$("#fab").style.display="none";
+if(!msgs.children.length)add("b","Hi, I’m EcoBot. Ask me which events are coming up or for an everyday eco tip.");
+if(!sample){try{sample=await claude.use("sample")}catch(e){sample=null}}
+if(!sample)add("b","The chatbot isn’t available in this view. Open the page in Claude to use it.")};
+$("#close").onclick=()=>{$("#chat").classList.remove("open");$("#fab").style.display=""};
+$("#cf").onsubmit=async e=>{e.preventDefault();const q=$("#ci").value.trim();if(!q)return;$("#ci").value="";add("u",q);
+if(!sample){add("b","The chatbot isn’t available in this view.");return}
+hist.push({role:"user",content:q});
+const input=hist.map((m,i)=>i===0?{role:"user",content:SYS()+"\n\nUser: "+m.content}:m);
+const out=add("b","…");
+try{const r=await sample(input,{cache:false,onText:({text})=>{out.textContent=text;msgs.scrollTop=msgs.scrollHeight}});out.textContent=r.text;hist.push({role:"assistant",content:r.text})}
+catch(err){hist.pop();out.textContent=err&&err.code==="rate_limited"?"Too many messages. Wait a moment and try again.":"EcoBot couldn’t answer. Try again."}};
+</script>
+</body>
+</html>
