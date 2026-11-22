@@ -114,7 +114,7 @@ render();
 /* EcoBot */
 const msgs=$("#msgs"),hist=[];
 let sample=async(input)=>{
-  const r=await fetch("/api/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({messages:input})});
+  const r=await fetch("https://sensei-ohgithubio-api.vercel.app/api/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({messages:input})});
   const d=await r.json();
   if(!r.ok)throw d;
   return {text:d.reply};
