@@ -28,7 +28,7 @@ The events in the project are sample data for demonstration.
 - HTML, CSS and JavaScript (single page, no framework)
 - Browser `localStorage` for saving registrations on the user's device
 - Browser Geolocation API for nearby sorting
-- Claude API through a small serverless function for the chatbot
+- Gemini API through a small serverless function for the chatbot
 - GitHub Pages for the website and Vercel for the chatbot function
 
 ## Project structure
@@ -47,9 +47,9 @@ greenconnect/
 **Website only:** download `index.html` and open it in a browser. Everything works except the chatbot.
 
 **With the chatbot:**
-1. Create an API key at console.anthropic.com and set a spending limit.
+1. Create an API key at aistudio.google.com and set a spending limit.
 2. Deploy the `greenconnect-api` repository on Vercel.
-3. In Vercel, add an environment variable named `ANTHROPIC_API_KEY` with your key, then redeploy.
+3. In Vercel, add an environment variable named `GEMINI_API_KEY` with your key, then redeploy.
 4. In `index.html`, set the chat request URL to your Vercel link followed by `/api/chat`.
 5. In `api/chat.js`, set the allowed origin to your GitHub Pages address.
 
