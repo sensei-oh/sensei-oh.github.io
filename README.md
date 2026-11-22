@@ -3,10 +3,10 @@
 
 A website that helps people find and join local environmental activities such as cleanliness drives, recycling programmes and tree plantation campaigns.
 
-**Live site:** https://YOURUSERNAME.github.io/greenconnect/
+**Live site:** https://sensei-oh.github.io/greenconnect/
 
-Project for IDEA LAB-I, First Year, Computer Science & Engineering (AI&DS), Shree L. R. Tiwari College of Engineering.
-Student: Janit Sarvaiya | Guide: Mr. Rajesh Gaikwad
+Project for IDEA LAB-I, First Year, Computer Science & Engineering (AI&DS)
+Student: Janit Sarvaiya
 
 ## Problem statement
 
@@ -38,7 +38,6 @@ greenconnect/
   index.html      the website (frontend)
   README.md       this file
 
-greenconnect-api/
   api/
     chat.js       chatbot backend (deployed on Vercel)
 ```
@@ -74,6 +73,6 @@ Open `index.html` and edit the `EVENTS` list near the top of the script. Each ev
 - Event check-in using QR codes
 - Support for multiple languages
 
-## SDG alignment
+## UNSDG alignment
 
 SDG 4 (Quality Education), SDG 8 (Decent Work and Economic Growth) and SDG 10 (Reduced Inequalities).
