@@ -112,7 +112,13 @@ navigator.geolocation.getCurrentPosition(p=>{pos={lat:p.coords.latitude,lon:p.co
 render()});
 render();
 /* EcoBot */
-const msgs=$("#msgs"),hist=[];let sample=null;
+const msgs=$("#msgs"),hist=[];
+let sample=async(input)=>{
+  const r=await fetch("/api/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({messages:input})});
+  const d=await r.json();
+  if(!r.ok)throw d;
+  return {text:d.reply};
+};
 function add(c,t){const d=document.createElement("div");d.className="m "+c;d.textContent=t;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d}
 const SYS=()=>"You are EcoBot, the assistant inside GreenConnect, a platform that helps people find and join local environmental activities. Be friendly and brief (under 90 words). Answer using these events when asked about them, and never invent events:\n"+EVENTS.map(e=>`- ${e.title} (${e.cat}) on ${fmt(e.when)} at ${e.place}: ${e.desc}`).join("\n")+"\nFor eco tips, give practical everyday advice. If asked how to register, say to open the Events tab and tap Register. Politely decline unrelated topics.";
 $("#fab").onclick=async()=>{$("#chat").classList.add("open");$("#fab").style.display="none";
