@@ -3,7 +3,7 @@
 
 A website that helps people find and join local environmental activities such as cleanliness drives, recycling programmes and tree plantation campaigns.
 
-**Live site:** https://sensei-oh.github.io/greenconnect/
+**Live site:** (https://sensei-oh.github.io/)
 
 Project for IDEA LAB-I, First Year, Computer Science & Engineering (AI&DS)
 Student: Janit Sarvaiya
