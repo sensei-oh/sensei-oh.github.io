@@ -134,5 +134,409 @@ const out=add("b","…");
 try{const r=await sample(input,{cache:false,onText:({text})=>{out.textContent=text;msgs.scrollTop=msgs.scrollHeight}});out.textContent=r.text;hist.push({role:"assistant",content:r.text})}
 catch(err){hist.pop();out.textContent=err&&err.code==="rate_limited"?"Too many messages. Wait a moment and try again.":"EcoBot couldn’t answer. Try again."}};
 </script>
+
+/`Q&A DB`/
+<!-- Fuse.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+
+<style>
+  :root {
+    --gc-bg: #111413;
+    --gc-surface: #191f1d;
+    --gc-surface-hover: #222a27;
+    --gc-border: #2a3531;
+    --gc-accent: #10b981;
+    --gc-accent-hover: #059669;
+    --gc-text: #f4f6f5;
+    --gc-text-muted: #9ca8a3;
+  }
+
+  #gc-chat-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 99999;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--gc-text);
+  }
+
+  /* Floating Toggle Button */
+  #gc-chat-toggle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--gc-accent);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, background 0.2s ease;
+    margin-left: auto;
+  }
+
+  #gc-chat-toggle:hover {
+    background: var(--gc-accent-hover);
+    transform: scale(1.05);
+  }
+
+  /* Chat Window */
+  #gc-chat-window {
+    width: 360px;
+    max-width: calc(100vw - 32px);
+    height: 490px;
+    max-height: calc(100vh - 100px);
+    background: var(--gc-bg);
+    border: 1px solid var(--gc-border);
+    border-radius: 16px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    margin-bottom: 16px;
+    animation: gcSlideUp 0.2s ease-out;
+  }
+
+  #gc-chat-window.gc-open {
+    display: flex;
+  }
+
+  @keyframes gcSlideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Header */
+  .gc-chat-header {
+    background: var(--gc-surface);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--gc-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .gc-chat-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .gc-status-dot {
+    width: 8px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #22c55e;
+  }
+
+  #gc-chat-close {
+    background: none;
+    border: none;
+    color: var(--gc-text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+  }
+
+  #gc-chat-close:hover {
+    color: var(--gc-text);
+  }
+
+  /* Messages Area */
+  #gc-chat-messages {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gc-border) transparent;
+  }
+
+  .gc-msg {
+    max-width: 84%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    line-height: 1.45;
+    word-wrap: break-word;
+  }
+
+  .gc-msg a {
+    color: #34d399;
+    text-decoration: underline;
+  }
+
+  .gc-msg-bot {
+    background: var(--gc-surface);
+    border: 1px solid var(--gc-border);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+
+  .gc-msg-user {
+    background: var(--gc-accent);
+    color: #06281e;
+    font-weight: 500;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+
+  /* Quick Suggestion Chips */
+  .gc-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 16px 10px;
+  }
+
+  .gc-chip {
+    background: var(--gc-surface);
+    border: 1px solid var(--gc-border);
+    color: var(--gc-text-muted);
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .gc-chip:hover {
+    background: var(--gc-surface-hover);
+    color: var(--gc-text);
+    border-color: var(--gc-accent);
+  }
+
+  /* Input Bar */
+  #gc-chat-form {
+    display: flex;
+    padding: 12px;
+    background: var(--gc-surface);
+    border-top: 1px solid var(--gc-border);
+    gap: 8px;
+  }
+
+  #gc-chat-input {
+    flex: 1;
+    background: var(--gc-bg);
+    border: 1px solid var(--gc-border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    color: var(--gc-text);
+    font-size: 13.5px;
+    outline: none;
+  }
+
+  #gc-chat-input:focus {
+    border-color: var(--gc-accent);
+  }
+
+  #gc-chat-send {
+    background: var(--gc-accent);
+    border: none;
+    border-radius: 8px;
+    color: #06281e;
+    padding: 0 14px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  #gc-chat-send:hover {
+    background: var(--gc-accent-hover);
+    color: #fff;
+  }
+</style>
+
+<div id="gc-chat-container">
+  <div id="gc-chat-window">
+    <div class="gc-chat-header">
+      <div class="gc-chat-title">
+        <span class="gc-status-dot"></span>
+        <span>GreenConnect Assistant</span>
+      </div>
+      <button id="gc-chat-close" aria-label="Close chat">&times;</button>
+    </div>
+
+    <div id="gc-chat-messages">
+      <div class="gc-msg gc-msg-bot">
+        Hi! Welcome to <b>GreenConnect</b>. Ask me about upcoming events near you, how to register, eco tips, or how this platform works!
+      </div>
+    </div>
+
+    <div class="gc-chips" id="gc-chat-chips">
+      <button type="button" class="gc-chip" data-q="What are events near me?">Events Near Me</button>
+      <button type="button" class="gc-chip" data-q="How do I register for a drive?">How to Join</button>
+      <button type="button" class="gc-chip" data-q="Give me an eco tip">Eco Tips</button>
+      <button type="button" class="gc-chip" data-q="What is GreenConnect?">About Project</button>
+    </div>
+
+    <form id="gc-chat-form">
+      <input type="text" id="gc-chat-input" placeholder="Ask something..." autocomplete="off" required />
+      <button type="submit" id="gc-chat-send">Send</button>
+    </form>
+  </div>
+
+  <button id="gc-chat-toggle" aria-label="Open chat">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+  </button>
+</div>
+
+<script>
+  (() => {
+    const knowledgeBase = [
+      // --- PRACTICAL USER Q&As ---
+      {
+        q: "What are events near me? Upcoming local drives activities schedule",
+        tags: ["near me", "events", "upcoming", "local", "drives", "find", "happening", "where", "when", "location"],
+        a: "You can browse all upcoming local <b>cleanliness drives</b>, <b>tree plantation campaigns</b>, and <b>recycling programmes</b> directly in our Events section—complete with the activity name, date, location, and organiser details."
+      },
+      {
+        q: "How do I register or sign up to join an event? Volunteer participation",
+        tags: ["register", "sign up", "join", "volunteer", "how to", "participate", "attend", "rsvp"],
+        a: "Joining is simple! Pick an activity from the <b>Event Listings</b>, check the date and location details, and submit a quick registration to reserve your spot."
+      },
+      {
+        q: "How does participation tracking work? Attendance record badges points",
+        tags: ["record", "track", "attendance", "history", "badges", "points", "certificate", "recognition", "profile"],
+        a: "GreenConnect maintains a simple <b>participation record</b> of the environmental drives you attend, helping track community involvement (with recognition badges/points planned as an enhancement!)."
+      },
+      {
+        q: "Give me an environmental awareness tip! Eco tips sustainability habits",
+        tags: ["tip", "tips", "advice", "eco", "green", "save", "recycle", "plastic", "habit", "awareness"],
+        a: "<b>Quick Eco Tip:</b> Separate dry recyclables (paper, clean plastic, metal) from wet organic waste at home, and carry a reusable bottle and cloth bag to cut down single-use plastic!"
+      },
+      {
+        q: "Can I organize or list an event on GreenConnect? Organiser submit",
+        tags: ["organize", "organiser", "host", "add event", "post", "create", "submit", "community group"],
+        a: "Yes! Instead of scattering updates across posters and multiple social media pages, GreenConnect brings community event details together in one central place with clear organiser info."
+      },
+      {
+        q: "Is GreenConnect free to use? Cost students residents",
+        tags: ["free", "cost", "price", "pay", "fee", "who can join", "students", "residents"],
+        a: "Yes, GreenConnect is completely free and built to make environmental activities accessible to both students and local residents."
+      },
+
+      // --- PROJECT & ACADEMIC Q&As ---
+      {
+        q: "What is GreenConnect? About the platform overview abstract introduction",
+        tags: ["what", "greenconnect", "about", "platform", "overview", "abstract", "project", "purpose"],
+        a: "<b>GreenConnect</b> is a digital platform designed to encourage community participation in environmental activities by centralizing event details, registration, participation records, and awareness tips."
+      },
+      {
+        q: "What problem does GreenConnect solve? Why was it built?",
+        tags: ["problem", "why", "issue", "barrier", "challenge", "low participation"],
+        a: "It solves <b>low community participation</b> in environmental drives caused by low awareness, scattered event details across posters and social media, and unclear registration steps."
+      },
+      {
+        q: "What are the key features and proposed solution?",
+        tags: ["features", "solution", "functions", "capabilities"],
+        a: "GreenConnect includes:<br>• <b>Event Listings:</b> Name, date, location & organiser.<br>• <b>Registration:</b> Quick sign-ups.<br>• <b>Participation Record:</b> Tracks involvement.<br>• <b>Awareness Tips:</b> Short sustainability insights."
+      },
+      {
+        q: "What technologies and tech stack are used to build GreenConnect?",
+        tags: ["tech", "stack", "technologies", "html", "css", "javascript", "firebase", "database", "built with"],
+        a: "GreenConnect is built with <b>HTML</b> (structure), <b>CSS</b> (layout & styling), and <b>JavaScript</b> (interactive features), with optional <b>Firebase</b> integration for database storage."
+      },
+      {
+        q: "Who created GreenConnect? Developer student college course",
+        tags: ["who", "creator", "developer", "author", "janit", "sarvaiya", "college", "tiwari", "idea lab"],
+        a: "Created by <b>Janit Sarvaiya</b> (Roll No. 35), Department of Computer Engineering at <b>Shree L. R. Tiwari College of Engineering</b>, for <b>IDEA LAB-I</b> (Course Code: 12122110) under the theme <i>Environment: Digital Empowerment for All</i>."
+      },
+      {
+        q: "What research or references support GreenConnect? UNEP Principle 10 SDG",
+        tags: ["references", "research", "literature", "unep", "principle 10", "sdg", "sustainable"],
+        a: "Supported by <b>UNEP Principle 10</b> (public access to environmental information and participation) and the <b>UN Sustainable Development Goals (SDGs)</b>."
+      }
+    ];
+
+    const fuse = new Fuse(knowledgeBase, {
+      keys: [
+        { name: "q", weight: 0.6 },
+        { name: "tags", weight: 0.4 }
+      ],
+      threshold: 0.45,
+      includeScore: true
+    });
+
+    const chatWindow = document.getElementById("gc-chat-window");
+    const toggleBtn = document.getElementById("gc-chat-toggle");
+    const closeBtn = document.getElementById("gc-chat-close");
+    const form = document.getElementById("gc-chat-form");
+    const input = document.getElementById("gc-chat-input");
+    const messages = document.getElementById("gc-chat-messages");
+    const chips = document.querySelectorAll(".gc-chip");
+
+    toggleBtn.addEventListener("click", () => {
+      chatWindow.classList.toggle("gc-open");
+      if (chatWindow.classList.contains("gc-open")) input.focus();
+    });
+
+    closeBtn.addEventListener("click", () => {
+      chatWindow.classList.remove("gc-open");
+    });
+
+    function addMessage(htmlText, sender) {
+      const div = document.createElement("div");
+      div.className = `gc-msg gc-msg-${sender}`;
+      if (sender === "user") {
+        div.textContent = htmlText;
+      } else {
+        div.innerHTML = htmlText;
+      }
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function getBotReply(query) {
+      const clean = query.trim().toLowerCase();
+
+      if (/^(hi|hello|hey|yo|sup|greetings)\b/.test(clean)) {
+        return "Hey there! Ask me about <b>events near you</b>, <b>how to register</b>, <b>eco tips</b>, or <b>what GreenConnect is</b>.";
+      }
+
+      const results = fuse.search(clean);
+      if (results.length > 0 && results[0].score <= 0.5) {
+        return results[0].item.a;
+      }
+
+      return "I'm not sure about that yet! Try asking about <b>events near me</b>, <b>how to join</b>, <b>eco tips</b>, or <b>project details</b>.";
+    }
+
+    function handleUserQuery(text) {
+      if (!text.trim()) return;
+      addMessage(text, "user");
+      input.value = "";
+
+      setTimeout(() => {
+        const reply = getBotReply(text);
+        addMessage(reply, "bot");
+      }, 220);
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      handleUserQuery(input.value);
+    });
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        handleUserQuery(chip.getAttribute("data-q"));
+      });
+    });
+  })();
+</script>
+
+
 </body>
 </html>
