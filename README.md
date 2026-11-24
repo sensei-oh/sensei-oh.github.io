@@ -63,7 +63,4 @@ sensei-oh.github.io/
  ├── index.html          Single-page application, styles, EcoBot, and data arrays
  └── README.md           Project documentation
 ```
-
-## Attribution
-
-Developed by Janit Sarvaiya (Roll No. 35)
+ 
